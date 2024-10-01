@@ -36,8 +36,22 @@ public class ShamirSecretSharing {
         return new JSONObject(jsonContent.toString());
     }
 
+    // Method to check for wrong points by comparing the actual and expected y-values
+    public static List<String> findWrongPoints(List<Long> xValues, List<Long> yValues, int k, double tolerance) {
+        List<String> wrongPoints = new ArrayList<>();
+        for (int i = 0; i < xValues.size(); i++) {
+            double expectedY = lagrangeInterpolation(xValues, yValues, k); // Calculate expected Y value
+            if (Math.abs(expectedY - yValues.get(i)) > tolerance) {
+                wrongPoints.add("(" + xValues.get(i) + ", " + yValues.get(i) + ")");
+            }
+        }
+        return wrongPoints;
+    }
+
     public static void main(String[] args) {
         try {
+            double tolerance = 0.001; // Define tolerance for checking wrong points
+
             // Load the first test case JSON file
             JSONObject testCase1 = readJSONFile("testcase1.json");
 
@@ -65,8 +79,8 @@ public class ShamirSecretSharing {
             }
 
             // Find the constant term c using Lagrange Interpolation
-            double constantC = lagrangeInterpolation(xValues, yValues, k);
-            System.out.printf("Constant term (c) for Test Case 1: %.2f%n", constantC);
+            double constantC1 = lagrangeInterpolation(xValues, yValues, k);
+            System.out.printf("Secret for testcase1.json: %.2f%n", constantC1);
 
             // Load the second test case JSON file and repeat the process
             JSONObject testCase2 = readJSONFile("testcase2.json");
@@ -94,9 +108,17 @@ public class ShamirSecretSharing {
                 }
             }
 
-            // Find the constant term c using Lagrange Interpolation
-            constantC = lagrangeInterpolation(xValues, yValues, k);
-            System.out.printf("Constant term (c) for Test Case 2: %.2f%n", constantC);
+            // Find the constant term c for the second test case
+            double constantC2 = lagrangeInterpolation(xValues, yValues, k);
+            System.out.printf("Secret for testcase2.json: %.2f%n", constantC2);
+
+            // Find and print wrong points for the second test case
+            List<String> wrongPoints = findWrongPoints(xValues, yValues, k, tolerance);
+            if (!wrongPoints.isEmpty()) {
+                System.out.println("Wrong points in testcase2.json: " + wrongPoints);
+            } else {
+                System.out.println("No wrong points in testcase2.json.");
+            }
 
         } catch (Exception e) {
             e.printStackTrace();
